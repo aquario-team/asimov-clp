@@ -1,6 +1,6 @@
 // ============================================================================
 //  Programa da bancada PLC500 (o mesmo que está em plc500Bancada.project),
-//  organizado como numa máquina de verdade. Explicação: docs/CLP-BANCADA.md
+//  organizado como numa máquina de verdade. Explicação: README.md
 //
 //  Cada bloco começa com "//#### TIPO Nome" (o tipo de objeto a criar no CODESYS:
 //  DUT, GVL, PERSISTENT = Persistent Variables, FB, FUN, PRG). Nos FB/FUN/PRG,

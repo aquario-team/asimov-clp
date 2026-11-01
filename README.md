@@ -1,7 +1,13 @@
 # asimov-clp — programa do PLC500 da bancada
 
 Programa CODESYS do CLP WEG PLC500 da bancada, organizado como numa máquina real e com memória interna.
-O coletor que lê este CLP fica no repositório [asimov](https://github.com/aquario-team/asimov).
+
+| Repositório | O que tem |
+|---|---|
+| **asimov-clp** (este) | programa do CLP PLC500 (CODESYS) |
+| [asimov-ihm](https://github.com/aquario-team/asimov-ihm) | telas da IHM cMT1106X (EasyBuilder Pro) |
+| [asimov](https://github.com/aquario-team/asimov) | coletor que lê o CLP pela rede (privado) |
+| [asimov-central](https://github.com/aquario-team/asimov-central) | painel web e toda a documentação (privado) |
 
 O programa do PLC500 da bancada (3 botões, LEDs, servo que "produz" peças) está pronto aqui:
 
@@ -9,6 +15,8 @@ O programa do PLC500 da bancada (3 botões, LEDs, servo que "produz" peças) est
 |---|---|
 | `plc500Bancada.project` | projeto do CODESYS pronto: é só abrir, compilar e mandar para o CLP |
 | `plc500Bancada.st` | o mesmo programa em texto (para ler, comparar versões ou colar à mão) |
+| `README.md` | este guia |
+| `.gitignore` / `.gitattributes` | o que o git ignora / como trata cada tipo de arquivo |
 
 Foi montado a partir do seu último projeto e compilado no CODESYS V3.5 SP22 Patch 4 com **0 erros e 0 avisos**.
 O que ele faz é o mesmo de antes (botões DI1/DI2/DI3, LEDs DO4/DO5/DO6, servo suave na DO1, um giro = uma peça).
@@ -40,7 +48,7 @@ Tudo isso já está feito dentro do `.project`. Serve de checklist se você cria
 | **Application → Add Object → Persistent Variables** | nome **`GVL_Memoria`** | é a memória interna (seção 4) |
 | **Application → Symbols** (Symbol Configuration) | marcar **`GVLColeta`** e **`GVL_Memoria`**, acesso **Read** (só leitura) | é o que aparece no OPC UA para o coletor; só leitura = ninguém de fora altera nada |
 | **Device → I_Os → I/Os Parameters → DO1 / PWM1** | **Pin type = PWM** (as outras saídas ficam DO) | sem isso a DO1 é uma saída comum e o bloco `PWM1` do código não mexe o servo |
-| Ligações | 24 V no V+ (pino 1) e COM (pino 2) das saídas; botões nas DI1–DI3 (PNP, COM no pino 11) | ver [docs/PLC500.md](https://github.com/aquario-team/asimov/blob/main/docs/PLC500.md) no asimov |
+| Ligações | 24 V no V+ (pino 1) e COM (pino 2) das saídas; botões nas DI1–DI3 (PNP, COM no pino 11) | ver [docs/PLC500.md](https://github.com/aquario-team/asimov-central/blob/main/docs/PLC500.md) no asimov-central |
 
 ## 3. Como o programa está organizado
 
@@ -97,7 +105,7 @@ numa área de **256 kB** protegida por supercapacitores (aguenta pelo menos 30 d
     Para cobrir mais tempo, aumente `TAMANHO_DIARIO` (exige Download; o diário recomeça vazio, os totais continuam).
 
 **O coletor recebe pela `GVLColeta`:** `pecas` (agora é o total que nunca zera), `segExecutando`, `segParada`,
-`segManutencao`, `vezesLigou`, `diarioSeq` e `relogioClp`. Elas já estão em [maquinas/plc500Bancada.yaml](https://github.com/aquario-team/asimov/blob/main/maquinas/plc500Bancada.yaml) do asimov
+`segManutencao`, `vezesLigou`, `diarioSeq` e `relogioClp`. Elas já estão em [config/maquinas/plc500Bancada.yaml](https://github.com/aquario-team/asimov/blob/main/config/maquinas/plc500Bancada.yaml) do asimov
 (os tempos com `variacaoMinima: 60`, para não mandar uma mudança por segundo; `relogioClp` fica desmarcada).
 O diário completo fica na `GVL_Memoria`, também liberada só para leitura no OPC UA: ler o diário e mandar
 para a fila os eventos que faltaram é o próximo passo no coletor.
@@ -138,5 +146,15 @@ Com o Login ativo: digite o valor novo na coluna *Prepared value* e aperte **Ctr
 
 - Editou no CODESYS: salve, feche e faça commit do `.project`. Para o histórico ficar legível, atualize também o
   `plc500Bancada.st` com o mesmo código (é o que mostra **o que mudou** num diff; o `.project` é binário).
-- Os arquivos que o CODESYS gera sozinho (`*.opt`, `*.compileinfo`, `*.bootinfo`, `*.precompilecache`, `*.~u`,
-  o XML de símbolos) ficam fora do git (`.gitignore`).
+- Os arquivos que o CODESYS gera sozinho ficam fora do git (`.gitignore`). Ele recria todos ao abrir ou compilar:
+
+| Arquivo gerado | O que é |
+|---|---|
+| `*.compileinfo`, `*.bootinfo`, `*.bootinfo_guids`, `*.precompilecache` | resultado da compilação (vários MB, muda a cada Build) |
+| `*.opt` | preferências de cada usuário/PC (janelas abertas, etc.) |
+| `*.~u` | trava de "projeto aberto" (tem o nome do usuário e do PC) |
+| `*.Device.Application.xml` | lista de símbolos exportada pela Symbol Configuration |
+| `*.bak` | backup automático |
+
+> **Não use "Add files via upload" no site do GitHub.** O upload pelo site ignora o `.gitignore` e manda
+> os arquivos gerados junto. Use `git add` + `git commit` + `git push` (ou o GitHub Desktop), que respeitam o `.gitignore`.
